@@ -25,10 +25,13 @@ calendar grids on y without transformation.}
 
 \item{date}{A \code{Date} variable mapping to dates in the calendar.}
 
-\item{calendar}{Type of calendar. "monthly" calendar (the default) organises
+\item{calendar}{Type of calendar. (1) "monthly" calendar (the default) organises
 the \code{data} to a common format comprised of day of week in the column and
-week of month in the row. "weekly" calendar consists of day of week and
-week of year. "daily" calendar refers to day of month and month of year.}
+week of month in the row. A monthly calendar is set up as a 5 by 7 layout
+matrix. Each month could extend over six weeks but in these months is to
+wrap the last few days up to the top row of the block. (2) "weekly"
+calendar consists of day of week and week of year. (3) "daily" calendar
+refers to day of month and month of year.}
 
 \item{dir}{Direction of calendar: "h" for horizontal (the default) or "v" for
 vertical.}
@@ -93,14 +96,14 @@ to have their individual scales. For more details, see \code{vignette("frame-cal
    library(dplyr)
    # compute the calendar layout for the data frame
    calendar_df <- pedestrian \%>\%
-     filter(Sensor_ID == 13) \%>\% 
+     filter(Sensor_ID == 13, Year == 2016) \%>\% 
      frame_calendar(x = Time, y = Hourly_Counts, date = Date, nrow = 4)
 
    # ggplot
    p1 <- calendar_df \%>\% 
      ggplot(aes(x = .Time, y = .Hourly_Counts, group = Date)) +
      geom_line()
-   prettify(p1)
+   prettify(p1, size = 3, label.padding = unit(0.15, "lines"))
    
    # use in conjunction with group_by()
    grped_calendar <- pedestrian \%>\% 
@@ -117,8 +120,8 @@ to have their individual scales. For more details, see \code{vignette("frame-cal
    prettify(p2)
    \dontrun{
      # allow for different languages
-     # below gives the simplief chinese label along with STKaiti font family 
-     # if this font is installed in user's local system
+     # below gives simplied Chinese labels with STKaiti font family,
+     # assuming this font installed in user's local system
      prettify(p2, locale = "zh", family = "STKaiti")
    }
 

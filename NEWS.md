@@ -1,3 +1,14 @@
+# sugrrants 0.1.1
+
+## Dropped functions
+
+* dropped an internal function `wday2()` since the lubridate v1.7.1 added a new argument `week_start` in the `wday()`.
+
+## Improvement
+
+* `frame_calendar()`: arguments `x` and `y` support factor and hms class.
+* Added a note on AFL holiday for the documentation of `au_holiday(state = "VIC")`.
+
 # sugrrants 0.1.0
 
 * Initial release

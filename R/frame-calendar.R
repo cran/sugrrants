@@ -24,10 +24,13 @@ globalVariables(c(
 #'    one variable need putting to `vars()`. If integer 1 is specified, it returns
 #'    calendar grids on y without transformation.
 #' @param date A `Date` variable mapping to dates in the calendar.
-#' @param calendar Type of calendar. "monthly" calendar (the default) organises
+#' @param calendar Type of calendar. (1) "monthly" calendar (the default) organises
 #'    the `data` to a common format comprised of day of week in the column and
-#'    week of month in the row. "weekly" calendar consists of day of week and
-#'    week of year. "daily" calendar refers to day of month and month of year.
+#'    week of month in the row. A monthly calendar is set up as a 5 by 7 layout
+#'    matrix. Each month could extend over six weeks but in these months is to 
+#'    wrap the last few days up to the top row of the block. (2) "weekly" 
+#'    calendar consists of day of week and week of year. (3) "daily" calendar 
+#'    refers to day of month and month of year.
 #' @param dir Direction of calendar: "h" for horizontal (the default) or "v" for 
 #'    vertical.
 #' @param sunday FALSE (the default) indicating to starting with Monday in a
@@ -65,14 +68,14 @@ globalVariables(c(
 #'    library(dplyr)
 #'    # compute the calendar layout for the data frame
 #'    calendar_df <- pedestrian %>%
-#'      filter(Sensor_ID == 13) %>% 
+#'      filter(Sensor_ID == 13, Year == 2016) %>% 
 #'      frame_calendar(x = Time, y = Hourly_Counts, date = Date, nrow = 4)
 #'
 #'    # ggplot
 #'    p1 <- calendar_df %>% 
 #'      ggplot(aes(x = .Time, y = .Hourly_Counts, group = Date)) +
 #'      geom_line()
-#'    prettify(p1)
+#'    prettify(p1, size = 3, label.padding = unit(0.15, "lines"))
 #'    
 #'    # use in conjunction with group_by()
 #'    grped_calendar <- pedestrian %>% 
@@ -89,8 +92,8 @@ globalVariables(c(
 #'    prettify(p2)
 #'    \dontrun{
 #'      # allow for different languages
-#'      # below gives the simplief chinese label along with STKaiti font family 
-#'      # if this font is installed in user's local system
+#'      # below gives simplied Chinese labels with STKaiti font family,
+#'      # assuming this font installed in user's local system
 #'      prettify(p2, locale = "zh", family = "STKaiti")
 #'    }
 #'
@@ -192,7 +195,7 @@ frame_calendar_ <- function(
 
   # as some variables have been created for the computation,
   # if `data` has those variables, they're likely to be overwritten.
-  # a warning of conflicts is thrown away.
+  # an error of conflicts is thrown away.
   int_vars <- c(".gx", ".gy", ".cx", ".cy", ".ymax", ".ymin")
   if (possibly_identity(x)) int_vars <- c(int_vars, ".x")
   if (possibly_identity(y)) int_vars <- c(int_vars, ".y")
@@ -202,11 +205,11 @@ frame_calendar_ <- function(
   check_vars <- int_vars %in% old_cn
   if (any(check_vars)) {
     str_vars <- int_vars[check_vars]
-    abort(paste(
+    abort(
       "The variables including",
       paste(str_vars, collapse = ", "),
       "must be renamed to proceed."
-    ))
+    )
   }
 
   date_eval <- sort(eval_tidy(date, data = data))
@@ -272,8 +275,8 @@ frame_calendar_ <- function(
 
   data <- data %>% 
     dplyr::mutate(
-      .ymax = max(!!!y, na.rm = TRUE),
-      .ymin = min(!!!y, na.rm = TRUE)
+      .ymax = max(as.numeric(!!!y), na.rm = TRUE),
+      .ymin = min(as.numeric(!!!y), na.rm = TRUE)
     )
   if (polar) { # polar only support one y
     if (length(y) > 1) {
@@ -282,8 +285,9 @@ frame_calendar_ <- function(
     .y <- paste0(".", y[[1]])
     data <- data %>% 
       dplyr::mutate(
-        theta = 2 * pi * normalise(!!x, xmax = max_na(!!x)),
-        radius = normalise(!!!y, xmax = max_na(!!!y)),
+        theta = 2 * pi * normalise(as.numeric(!!x), 
+          xmax = max_na(as.numeric(!!x))),
+        radius = normalise(as.numeric(!!!y), xmax = max_na(as.numeric(!!!y))),
         !!.x := .cx + width / 2 * radius * sin(theta),
         !!.y := .cy + height / 2 * radius * cos(theta)
       ) %>% 
@@ -297,7 +301,8 @@ frame_calendar_ <- function(
     } else {
       data <- data %>% 
         dplyr::mutate(
-          !!.x := .cx + normalise(!!x, xmax = max_na(!!x)) * width
+          !!.x := .cx + normalise(as.numeric(!!x), 
+            xmax = max_na(as.numeric(!!x))) * width
         )
     }
     if (possibly_identity(y)) {
@@ -510,6 +515,7 @@ gen_reference.monthly <- function(
   mtext <- mtext[seq_along(unique_idx), , drop = FALSE]
   mtext$mon <- unique_labels
   mtext$year <- substring(unique_idx, first = 1, last = 4)
+  mtext$year[duplicated(mtext$year)] <- "" # make year appear in the first month
 
   # Weekday text
   if (dir == "h") {
@@ -590,7 +596,7 @@ prettify <- function(plot, label = c("label", "text"), locale, abbr = TRUE,
   if (cal == "monthly") {
     nyr <- unique.default(label$year)
     seq_label <- mtext[label$mon] 
-    if (!has_length(nyr, 1)) seq_label <- paste(seq_label, label$year)
+    if (length(nyr) > 2) seq_label <- paste(seq_label, label$year)
     label <- bind_cols(label, label = seq_label)
     text <- bind_cols(text, label = dtext[text$day])
   } else if (cal == "weekly") {
