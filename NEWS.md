@@ -1,3 +1,12 @@
+# sugrrants 0.1.2
+
+* Added a new argument `margin = NULL` to allow users for margin adjustment between month panels.
+* Fixed variable scoping issues in `frame_calendar()`.
+* `frame_calendar()` added support to tsibble or `tbl_ts`.
+* Added **tsibble** as Imports.
+* Improved `frame_calendar()` in conjunction with `group_by()` for incomplete time series (#3).
+* Fixed y axis limits only depending on the first variable when using multiple variables (#5).
+
 # sugrrants 0.1.1
 
 ## Dropped functions

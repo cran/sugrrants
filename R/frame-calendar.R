@@ -1,107 +1,104 @@
 globalVariables(c(
-  ".group_id", ".gx", ".gy", ".xmajor_min", ".xminor_max", ".xminor_min", 
+  ".group_id", ".gx", ".gy", ".xmajor_min", ".xminor_max", ".xminor_min",
   ".ymajor_max", ".ymajor_min", ".yminor_max", ".yminor_min", "COL", "PANEL",
-  "MCOL", "MPANEL", "MROW", "ROW", "date_eval", "label", "margins", "radius", 
+  "MCOL", "MPANEL", "MROW", "ROW", "date_eval", "label", "margin", "radius",
   "theta", "x", "y", ".day", ".calendar_tbl", ".x", ".y", ".", ".ymax", ".ymin",
   ".cx", ".cy"
 ))
 
-#' @title Rearrange a temporal data frame to a calendar-based data format using 
-#'    linear algebra
+#' Rearrange a temporal data frame to a calendar-based data format using linear algebra
 #'
-#' @description Temporal data of daily intervals or higher frequency levels can 
-#'    be organised into a calendar-based format, which is useful for visually
-#'    presenting calendar-related activities or multiple seasonality (such as 
-#'    time of day, day of week, day of month). The function only returns a
-#'    rearranged data frame, and `ggplot2` takes care of the plotting afterwards. 
-#'    It allows more flexibility for users to visualise the data in various ways.
+#' Temporal data of daily intervals or higher frequency levels can be organised
+#' into a calendar-based format, which is useful for visually presenting
+#' calendar-related activities or multiple seasonality (such as time of day,
+#' day of week, day of month). The function only returns a rearranged data frame,
+#' and `ggplot2` takes care of the plotting afterwards. It allows more
+#' flexibility for users to visualise the data in various ways.
 #'
 #' @param data A data frame or a grouped data frame including a `Date` variable.
-#' @param x A bare (or unquoted) variable mapping to x axis, for example time of 
-#'    day. If integer 1 is specified, it simply returns calendar grids on x 
-#'    without transformation.
-#' @param y A bare (or unquoted) variable or more mapping to y axis. More than 
-#'    one variable need putting to `vars()`. If integer 1 is specified, it returns
-#'    calendar grids on y without transformation.
+#' @param x A bare (or unquoted) variable mapping to x axis, for example time of
+#' day. If integer 1 is specified, it simply returns calendar grids on x
+#' without transformation.
+#' @param y A bare (or unquoted) variable or more mapping to y axis. More than
+#' one variable need putting to `vars()`. If integer 1 is specified, it returns
+#' calendar grids on y without transformation.
 #' @param date A `Date` variable mapping to dates in the calendar.
 #' @param calendar Type of calendar. (1) "monthly" calendar (the default) organises
-#'    the `data` to a common format comprised of day of week in the column and
-#'    week of month in the row. A monthly calendar is set up as a 5 by 7 layout
-#'    matrix. Each month could extend over six weeks but in these months is to 
-#'    wrap the last few days up to the top row of the block. (2) "weekly" 
-#'    calendar consists of day of week and week of year. (3) "daily" calendar 
-#'    refers to day of month and month of year.
-#' @param dir Direction of calendar: "h" for horizontal (the default) or "v" for 
-#'    vertical.
+#' the `data` to a common format comprised of day of week in the column and
+#' week of month in the row. A monthly calendar is set up as a 5 by 7 layout
+#' matrix. Each month could extend over six weeks but in these months is to
+#' wrap the last few days up to the top row of the block. (2) "weekly"
+#' calendar consists of day of week and week of year. (3) "daily" calendar
+#' refers to day of month and month of year.
+#' @param dir Direction of calendar: "h" for horizontal (the default) or "v" for
+#' vertical.
 #' @param sunday FALSE (the default) indicating to starting with Monday in a
-#'    week, or TRUE for Sunday, when `calendar = "monthly"`.
-#' @param nrow,ncol Number of rows and columns defined for "monthly" calendar 
-#'    layout. If `NULL`, it computes a sensible layout.
+#' week, or TRUE for Sunday, when `calendar = "monthly"`.
+#' @param nrow,ncol Number of rows and columns defined for "monthly" calendar
+#' layout. If `NULL`, it computes a sensible layout.
 #' @param polar FALSE (the default) for Cartesian or TRUE for polar coordinates.
 #' @param scale "fixed" (the default) for fixed scale. "free" for scaling
-#'    conditional on each daily cell, "free_wday" for scaling on weekdays, 
-#'    "free_mday" for scaling on day of month.
-#' @param width,height Numerics between 0 and 1 to specify the width/height for 
-#'    each glyph.
+#' conditional on each daily cell, "free_wday" for scaling on weekdays,
+#' "free_mday" for scaling on day of month.
+#' @param width,height Numerics between 0 and 1 to specify the width/height for
+#' each glyph.
+#' @param margin A numeric between 0 and 1 to specify the gap between month panels.
 #'
-#' @return A data frame or a tibble with newly added columns of `.x`, `.y`. `.x` 
-#'    and `.y` together give new coordinates computed for different types of 
-#'    calendars. `date` groups the same dates in a chronological order, which is
-#'    useful for `geom_line` or `geom_path`. The basic use is `ggplot(aes(x = .x, 
-#'    y = .y, group = date)) + geom_*`. The variable names `.x` and `.y` reflect 
-#'    the actual `x` and `y` with a prefix `.`.
+#' @return A data frame or a tibble with newly added columns of `.x`, `.y`. `.x`
+#' and `.y` together give new coordinates computed for different types of
+#' calendars. `date` groups the same dates in a chronological order, which is
+#' useful for `geom_line` or `geom_path`. The basic use is `ggplot(aes(x = .x,
+#' y = .y, group = date)) + geom_*`. The variable names `.x` and `.y` reflect
+#' the actual `x` and `y` with a prefix `.`.
 #'
 #' @details The calendar-based graphic can be considered as small multiples
-#'    of sub-series arranged into many daily cells. For every multiple (or
-#'    facet), it requires the `x` variable mapped to be time of day and `y` to
-#'    value. New `x` and `y` are computed and named with a `.` prefixed to variable
-#'    according to `x` and `y` respectively, and get ready for `ggplot2` aesthetic 
-#'    mappings. In conjunction with `group_by()`, it allows the grouped variable 
-#'    to have their individual scales. For more details, see `vignette("frame-calendar",
-#'    package = "sugrrants")`
-#'
-#' @author Earo Wang
+#' of sub-series arranged into many daily cells. For every multiple (or
+#' facet), it requires the `x` variable mapped to be time of day and `y` to
+#' value. New `x` and `y` are computed and named with a `.` prefixed to variable
+#' according to `x` and `y` respectively, and get ready for `ggplot2` aesthetic
+#' mappings. In conjunction with `group_by()`, it allows the grouped variable
+#' to have their individual scales. For more details, see `vignette("frame-calendar",
+#' package = "sugrrants")`
 #'
 #' @rdname frame-calendar
-#' 
 #' @examples
-#'    library(dplyr)
-#'    # compute the calendar layout for the data frame
-#'    calendar_df <- pedestrian %>%
-#'      filter(Sensor_ID == 13, Year == 2016) %>% 
-#'      frame_calendar(x = Time, y = Hourly_Counts, date = Date, nrow = 4)
+#' library(dplyr)
+#' # compute the calendar layout for the data frame
+#' calendar_df <- pedestrian %>%
+#'   filter(Sensor_ID == 13, Year == 2016) %>%
+#'   frame_calendar(x = Time, y = Hourly_Counts, date = Date, nrow = 4)
 #'
-#'    # ggplot
-#'    p1 <- calendar_df %>% 
-#'      ggplot(aes(x = .Time, y = .Hourly_Counts, group = Date)) +
-#'      geom_line()
-#'    prettify(p1, size = 3, label.padding = unit(0.15, "lines"))
-#'    
-#'    # use in conjunction with group_by()
-#'    grped_calendar <- pedestrian %>% 
-#'      filter(Year == "2017", Month == "March") %>% 
-#'      group_by(Sensor_Name) %>% 
-#'      frame_calendar(
-#'        x = Time, y = Hourly_Counts, date = Date, sunday = TRUE
-#'      )
-#'    
-#'    p2 <- grped_calendar %>% 
-#'      ggplot(aes(x = .Time, y = .Hourly_Counts, group = Date)) +
-#'      geom_line() +
-#'      facet_wrap(~ Sensor_Name, nrow = 2)
-#'    prettify(p2)
-#'    \dontrun{
-#'      # allow for different languages
-#'      # below gives simplied Chinese labels with STKaiti font family,
-#'      # assuming this font installed in user's local system
-#'      prettify(p2, locale = "zh", family = "STKaiti")
-#'    }
+#' # ggplot
+#' p1 <- calendar_df %>%
+#'   ggplot(aes(x = .Time, y = .Hourly_Counts, group = Date)) +
+#'   geom_line()
+#' prettify(p1, size = 3, label.padding = unit(0.15, "lines"))
+#'
+#' # use in conjunction with group_by()
+#' grped_calendar <- pedestrian %>%
+#'   filter(Year == "2017", Month == "March") %>%
+#'   group_by(Sensor_Name) %>%
+#'   frame_calendar(
+#'     x = Time, y = Hourly_Counts, date = Date, sunday = TRUE
+#'   )
+#'
+#' p2 <- grped_calendar %>%
+#'   ggplot(aes(x = .Time, y = .Hourly_Counts, group = Date)) +
+#'   geom_line() +
+#'   facet_wrap(~ Sensor_Name, nrow = 2)
+#' prettify(p2)
+#' \dontrun{
+#'   # allow for different languages
+#'   # below gives simplied Chinese labels with STKaiti font family,
+#'   # assuming this font installed in user's local system
+#'   prettify(p2, locale = "zh", family = "STKaiti")
+#' }
 #'
 #' @export
 frame_calendar <- function(
-  data, x, y, date, calendar = "monthly", dir = "h", sunday = FALSE, 
+  data, x, y, date, calendar = "monthly", dir = "h", sunday = FALSE,
   nrow = NULL, ncol = NULL, polar = FALSE, scale = "fixed",
-  width = 0.95, height = 0.95
+  width = 0.95, height = 0.95, margin = NULL
 ) {
   calendar <- match.arg(calendar, c("monthly", "weekly", "daily"))
   dir <- match.arg(dir, c("h", "v"))
@@ -111,118 +108,96 @@ frame_calendar <- function(
 }
 
 #' @export
-frame_calendar.grouped_df <- function(
-  data, x, y, date, calendar = "monthly", dir = "h", sunday = FALSE, 
+frame_calendar.tbl_ts <- function(
+  data, x, y, date, calendar = "monthly", dir = "h", sunday = FALSE,
   nrow = NULL, ncol = NULL, polar = FALSE, scale = "fixed",
-  width = 0.95, height = 0.95
+  width = 0.95, height = 0.95, margin = NULL
 ) {
-  x <- deparse(substitute(x))
-  if (!possibly_quosure(y)) y <- deparse(substitute(y)) else y <- dots2str(y)
-  date <- deparse(substitute(date))
+  x <- enquo(x)
+  y <- enquo(y)
+  date <- enquo(date)
 
-  if (!possibly_identity(x)) x <- sym(x)
-  if (!possibly_identity(y)) y <- syms(y)
-  date <- sym(date)
-  cls <- class(data)
-
-  # other attributes obtained from the grouped var of largest group size
-  idx_max <- which.max(group_size(data))
-  data <- data %>% 
-    nest(.key = .calendar_tbl) %>% 
-    mutate(.calendar_tbl = map(
-      .calendar_tbl, 
-      function(data) frame_calendar_(
-        data = data, x = x, y = y, date = date,
-        calendar = calendar, dir = dir, sunday = sunday, 
-        nrow = nrow, ncol = ncol, polar = polar, scale = scale,
-        width = width, height = height
-      )
-    )) 
-  xattr <- data$.calendar_tbl[[idx_max]]
-  data <- unnest(data)
-
-  return(
-    structure(data,
-      breaks = get_breaks(xattr),
-      minor_breaks = get_minor_breaks(xattr),
-      label = get_label(xattr),
-      text = get_text(xattr),
-      text2 = get_text2(xattr),
-      dir = get_dir(xattr),
-      calendar = calendar,
-      class = c("ggcalendar", cls)
+  out <- frame_calendar.default(
+      data, x = !! x, y = !! y, date = !! date,
+      calendar = calendar, dir = dir, sunday = sunday,
+      nrow = nrow, ncol = ncol, polar = polar, scale = scale,
+      width = width, height = height, margin = margin
+    ) %>%
+    build_tsibble(
+      key = key(data), index = !! index(data), index2 = !! index2(data),
+      groups = groups(data), interval = interval(data), validate = FALSE, 
+      ordered = is_ordered(data)
     )
-  )
+  class(out) <- c("ggcalendar", class(out))
+  out
 }
 
 #' @export
 frame_calendar.default <- function(
-  data, x, y, date, calendar = "monthly", dir = "h", sunday = FALSE, 
+  data, x, y, date, calendar = "monthly", dir = "h", sunday = FALSE,
   nrow = NULL, ncol = NULL, polar = FALSE, scale = "fixed",
-  width = 0.95, height = 0.95
-) {
-  x <- deparse(substitute(x))
-  if (!possibly_quosure(y)) y <- deparse(substitute(y)) else y <- dots2str(y)
-  date <- deparse(substitute(date))
-
-  if (!possibly_identity(x)) x <- sym(x)
-  if (!possibly_identity(y)) y <- syms(y)
-  date <- sym(date)
-
-  frame_calendar_(
-    data, x = x, y = y, date = date,
-    calendar = calendar, dir = dir, sunday = sunday, 
-    nrow = nrow, ncol = ncol, polar = polar, scale = scale,
-    width = width, height = height
-  )
-}
-
-# frame_calendar_ takes strings as variable name
-frame_calendar_ <- function(
-  data, x, y, date, calendar = "monthly", dir = "h", sunday = FALSE, 
-  nrow = NULL, ncol = NULL, polar = FALSE, scale = "fixed",
-  width = 0.95, height = 0.95
+  width = 0.95, height = 0.95, margin = NULL
 ) {
   if (identical(between(width, 0, 1) && between(height, 0, 1), FALSE)) {
-    abort("width/height must be between 0 and 1.")
+    abort("`width`/`height` must be between 0 and 1.")
   }
+
   # data <- arrange(data, !!date) # I don't think I need to change row order
+  x <- enquo(x)
+  y <- enquo(y)
+  date <- enquo(date)
+  if (any(!purrr::map_lgl(list(x, y, date), ~ quo_is_symbolic(.) || is_identity(.)))) {
+    abort("Arguments `x`, `y`, and `Date` must be unquoted variables not characters.")
+  }
+
   .x <- paste0(".", quo_name(x))
-  # .y <- paste0(".", quo_name(y))
+  y_expr <- quo_get_expr(y)
+  if (quo_is_call(y)) {
+    fn <- call_name(y)
+    if (fn != "vars") {
+      abort("Multiple variables must be used with `vars()` for `y`.")
+    }
+    y <- quos(!!! call_args(y))
+  } else {
+    y <- quos(!! y_expr)
+  }
+  .y <- paste0(".", purrr::map_chr(y, quo_name))
   .date <- quo_name(date)
   cls <- class(data)
-  old_cn <- colnames(data)
+  old_cn <- names(data)
+
+  is_grped <- dplyr::is_grouped_df(data) || tsibble::is_grouped_ts(data)
+  grp_vars <- dplyr::groups(data)
 
   # as some variables have been created for the computation,
   # if `data` has those variables, they're likely to be overwritten.
   # an error of conflicts is thrown away.
   int_vars <- c(".gx", ".gy", ".cx", ".cy", ".ymax", ".ymin")
-  if (possibly_identity(x)) int_vars <- c(int_vars, ".x")
-  if (possibly_identity(y)) int_vars <- c(int_vars, ".y")
+  if (is_identity(x)) int_vars <- c(int_vars, ".x")
+  if (is_identity(y)) int_vars <- c(int_vars, ".y")
 
   if (polar) int_vars <- c(int_vars, "theta", "radius")
   if (scale %in% c("free_wday", "free_mday")) int_vars <- c(int_vars, ".day")
   check_vars <- int_vars %in% old_cn
   if (any(check_vars)) {
     str_vars <- int_vars[check_vars]
-    abort(
-      "The variables including",
-      paste(str_vars, collapse = ", "),
-      "must be renamed to proceed."
-    )
+    abort(sprintf(
+      "Columns %s must be renamed to proceed.",
+      paste(str_vars, collapse = ", ")
+    ))
   }
 
   date_eval <- sort(eval_tidy(date, data = data))
   if (!("Date" %in% class(date_eval))) {
-    abort("'date' must be a 'Date' class.")
+    abort(sprintf("`date` (`%s`) must be a `Date` class."), .date)
   }
 
   if (calendar != "monthly") {
     if (sunday) {
-      inform("The argument sunday only works for the monthly calendar.")
+      inform("Argument `sunday` only works for the monthly calendar.")
     }
     if (!is.null(nrow) || !is.null(ncol)) {
-      inform("The argument nrow/ncol only works for the monthly calendar.")
+      inform("Argument `nrow`/`ncol` only works for the monthly calendar.")
     }
   }
 
@@ -232,85 +207,92 @@ frame_calendar_ <- function(
 
   # Assign grids to the panels
   grids <- assign_grids(
-    max(cal_layout$ROW), max(cal_layout$COL), 
+    max(cal_layout$ROW), max(cal_layout$COL),
     width = width, height = height, polar = polar
   )
-  cal_grids <- cal_layout %>% 
+  cal_grids <- cal_layout %>%
     left_join(grids, by = c("COL", "ROW"))
 
   # ideally should use left_join as keeping the colnames in the supplied order
   # but quo_name() doesn't support LHS
-  data <- cal_grids %>% 
+  data <- cal_grids %>%
     right_join(data, by = c("PANEL" = quo_name(date))) %>%
-    dplyr::mutate(!!.date := PANEL)
+    dplyr::mutate(!! .date := PANEL)
 
   # Define a small multiple width and height
   width <- resolution(data$.gx, zero = FALSE) * width
   height <- resolution(data$.gy, zero = FALSE) * height
-  margins <- min(c(width, height)) # Month by month margin
+  if (is.null(margin)) {
+    margin <- min(c(width, height)) # Month by month margin
+  }
 
   if (calendar == "monthly") {
-    data <- data %>% 
-      dplyr::group_by(MPANEL) %>% 
+    data <- data %>%
+      dplyr::group_by(MPANEL) %>%
       dplyr::mutate(
-        .gx = .gx + MCOL * margins,
-        .gy = .gy - MROW * margins,
-        .cx = .cx + MCOL * margins,
-        .cy = .cy - MROW * margins
-      ) 
+        .gx = .gx + MCOL * margin,
+        .gy = .gy - MROW * margin,
+        .cx = .cx + MCOL * margin,
+        .cy = .cy - MROW * margin
+      )
   }
 
   data <- ungroup(data) # is.null(scale)
   if (scale == "free") {
     data <- dplyr::group_by(data, ROW, COL)
   } else if (scale == "free_wday") {
-    data <- data %>% 
-      dplyr::mutate(.day = wday(!!date)) %>% 
+    data <- data %>%
+      dplyr::mutate(.day = wday(!! date)) %>%
       dplyr::group_by(.day)
   } else if (scale == "free_mday") {
-    data <- data %>% 
-      dplyr::mutate(.day = mday(!!date)) %>% 
+    data <- data %>%
+      dplyr::mutate(.day = mday(!! date)) %>%
       dplyr::group_by(.day)
   }
 
-  data <- data %>% 
+  if (is_grped) {
+    data <- data %>% 
+      group_by(!!! grp_vars)
+  }
+
+  data <- data %>%
     dplyr::mutate(
-      .ymax = max(as.numeric(!!!y), na.rm = TRUE),
-      .ymin = min(as.numeric(!!!y), na.rm = TRUE)
+      .ymax = max_na(!!! y),
+      .ymin = min_na(!!! y)
     )
   if (polar) { # polar only support one y
     if (length(y) > 1) {
-      message("Only the first 'y' variable is used.")
+      message("Only the first `y` variable is used.")
     }
-    .y <- paste0(".", y[[1]])
-    data <- data %>% 
+    .y <- .y[[1]]
+    data <- data %>%
       dplyr::mutate(
-        theta = 2 * pi * normalise(as.numeric(!!x), 
-          xmax = max_na(as.numeric(!!x))),
-        radius = normalise(as.numeric(!!!y), xmax = max_na(as.numeric(!!!y))),
-        !!.x := .cx + width / 2 * radius * sin(theta),
-        !!.y := .cy + height / 2 * radius * cos(theta)
-      ) %>% 
+        theta = 2 * pi * normalise(as.numeric(!! x),
+          xmax = max_na(as.numeric(!! x))),
+        radius = normalise(as.numeric(!!! y), xmax = max_na(as.numeric(!!! y))),
+        !! .x := .cx + width / 2 * radius * sin(theta),
+        !! .y := .cy + height / 2 * radius * cos(theta)
+      ) %>%
       dplyr::select(-c(theta, radius))
   } else {
     fn <- function(x, ymax, ymin) { # temporal function for mutate at
       normalise(x, xmax = max_na(ymax), xmin = min_na(ymin)) * height
     }
-    if (possibly_identity(x)) {
+    if (is_identity(x)) {
       data <- dplyr::mutate(data, .x = .cx)
     } else {
-      data <- data %>% 
+      data <- data %>%
         dplyr::mutate(
-          !!.x := .cx + normalise(as.numeric(!!x), 
-            xmax = max_na(as.numeric(!!x))) * width
+          !! .x := .cx + normalise(as.numeric(!! x),
+            xmax = max_na(as.numeric(!! x))) * width
         )
     }
-    if (possibly_identity(y)) {
+    if (is_identity(y)) {
       data <- dplyr::mutate(data, .y = .cy)
     } else {
-      data <- data %>% 
+      data <- data %>%
         dplyr::mutate_at(
-          .vars = vars(!!!y),
+          .vars = vars(!!! y),
           .funs = funs(zzz = .cy + fn(., .ymax, .ymin))
         )
     }
@@ -318,32 +300,32 @@ frame_calendar_ <- function(
   # generate breaks and labels for prettify()
   class(cal_grids) <- c(calendar, class(cal_grids))
   data_ref <- gen_reference(
-    cal_grids, margins, calendar = calendar, sunday = sunday, dir = dir
+    cal_grids, margin, calendar = calendar, sunday = sunday, dir = dir
   )
 
-  data <- data %>% 
-    ungroup() %>% 
-    dplyr::select(-(ROW:.cy)) %>% 
-    dplyr::select(-c(.ymax, .ymin))
+  data <- ungroup(data) %>%
+    dplyr::select(-c(ROW:.cy, .ymax, .ymin))
   if (scale %in% c("free_wday", "free_mday")) {
     data <- dplyr::select(data, -.day) # remove .day variable
   }
 
   # rename y's variables
-  y_idx <- ends_with("zzz", vars = colnames(data))
-  colnames(data)[y_idx] <- paste0(".", y)
+  y_idx <- ends_with("zzz", vars = names(data))
+  names(data)[y_idx] <- .y
 
-  return(
-    structure(data,
-      breaks = data_ref$breaks,
-      minor_breaks = data_ref$minor_breaks,
-      label = data_ref$label,
-      text = data_ref$text,
-      text2 = data_ref$text2,
-      dir = dir,
-      calendar = calendar,
-      class = c("ggcalendar", cls)
-    )
+  # use original column ordering
+  data <- data %>%
+    dplyr::select(old_cn, .x, .y)
+
+  structure(data,
+    breaks = data_ref$breaks,
+    minor_breaks = data_ref$minor_breaks,
+    label = data_ref$label,
+    text = data_ref$text,
+    text2 = data_ref$text2,
+    dir = dir,
+    calendar = calendar,
+    class = c("ggcalendar", cls)
   )
 }
 
@@ -430,7 +412,7 @@ gen_reference.weekly <- function(grids, dir = "h", ...) {
   nyears <- unique.default(yrs)
   week_labels <- paste(yrs, isoweek(date), sep = "-")
   unique_labels <- formatC( # make week index to be fixed-width 2 digits
-    as.integer(substring(unique(week_labels), first = 6)), 
+    as.integer(substring(unique(week_labels), first = 6)),
     width = 2, flag = "0"
   )
   unique_labels <- rle(unique_labels)$values # rm duplicates in run length
@@ -467,24 +449,24 @@ gen_reference.weekly <- function(grids, dir = "h", ...) {
 }
 
 gen_reference.monthly <- function(
-  grids, margins, dir = "h", sunday = FALSE, ...
+  grids, margin, dir = "h", sunday = FALSE, ...
 ) {
   # Month breaks
   grids <- arrange(grids, PANEL)
-  grids <- grids %>% 
-    group_by(MPANEL) %>% 
+  grids <- grids %>%
+    group_by(MPANEL) %>%
     mutate(
-      .gx = .gx + MCOL * margins,
-      .gy = .gy - MROW * margins
-    ) 
-  xbreaks_df <- grids %>% 
-    group_by(MCOL) %>% 
+      .gx = .gx + MCOL * margin,
+      .gy = .gy - MROW * margin
+    )
+  xbreaks_df <- grids %>%
+    group_by(MCOL) %>%
     summarise(
       .xmajor_min = min(.gx),
       .xmajor_max = max(.gx)
     )
-  ybreaks_df <- grids %>% 
-    group_by(MROW) %>% 
+  ybreaks_df <- grids %>%
+    group_by(MROW) %>%
     summarise(
       .ymajor_min = min(.gy),
       .ymajor_max = max(.gy)
@@ -533,7 +515,7 @@ gen_reference.monthly <- function(
 
   # Day of month text
   mday_text <- data.frame(
-    x = grids$.gx, 
+    x = grids$.gx,
     y = grids$.gy + min_height,
     label = mday(grids$PANEL)
   )
@@ -546,11 +528,11 @@ gen_reference.monthly <- function(
 
 #' @rdname frame-calendar
 #' @param plot ggplot object
-#' @param label If "label" is specified, it will add month/week text on the 
+#' @param label If "label" is specified, it will add month/week text on the
 #'    `ggplot` object, which is actually passed to `geom_label()`. If "text" is
 #'    specified, it will add weekday/day of month text on the `ggplot` object,
-#'    which is actually passed to `geom_text()`. By default, both "label" and 
-#'    "text" are used. If "text2" is specified for the "monthly" calendar only, 
+#'    which is actually passed to `geom_text()`. By default, both "label" and
+#'    "text" are used. If "text2" is specified for the "monthly" calendar only,
 #'    it will add day of month to the `ggplot` object.
 #' @param locale ISO 639 language code. The default is "en" (i.e. US English).
 #'    See [readr::locale] for more details.
@@ -558,7 +540,7 @@ gen_reference.monthly <- function(
 #'    used.
 #' @param ... Extra arguments passed to `geom_label()` and `geom_text()`
 #' @export
-prettify <- function(plot, label = c("label", "text"), locale, abbr = TRUE, 
+prettify <- function(plot, label = c("label", "text"), locale, abbr = TRUE,
   ...) {
   if (missing(plot)) {
     plot <- last_plot()
@@ -573,7 +555,7 @@ prettify <- function(plot, label = c("label", "text"), locale, abbr = TRUE,
     label_arg <- NULL
   } else {
     label_arg <- match.arg(
-      label, c("label", "text", "text2"), 
+      label, c("label", "text", "text2"),
       several.ok = TRUE
     )
   }
@@ -595,14 +577,14 @@ prettify <- function(plot, label = c("label", "text"), locale, abbr = TRUE,
   cal <- get_calendar(plot$data)
   if (cal == "monthly") {
     nyr <- unique.default(label$year)
-    seq_label <- mtext[label$mon] 
+    seq_label <- mtext[label$mon]
     if (length(nyr) > 2) seq_label <- paste(seq_label, label$year)
     label <- bind_cols(label, label = seq_label)
     text <- bind_cols(text, label = dtext[text$day])
   } else if (cal == "weekly") {
     text <- bind_cols(text, label = dtext[text$day])
   } else if (cal == "daily") {
-    seq_label <- mtext[label$mon] 
+    seq_label <- mtext[label$mon]
     label <- bind_cols(label, label = seq_label)
   }
   breaks <- get_breaks(plot$data)
@@ -626,7 +608,7 @@ prettify <- function(plot, label = c("label", "text"), locale, abbr = TRUE,
     label_param$mapping <- aes(x, y, label = label)
     label_param$hjust <- label_param$vjust <- 0
     label_param$inherit.aes <- FALSE
-    plot <- plot + 
+    plot <- plot +
       do.call(geom_label, label_param)
   }
   if ("text" %in% label_arg) {
@@ -636,7 +618,7 @@ prettify <- function(plot, label = c("label", "text"), locale, abbr = TRUE,
     if (dir == "h") {
       text_param$nudge_y <- -0.01
       text_param$vjust <- 1
-      plot <- plot + 
+      plot <- plot +
         do.call(geom_text, text_param)
     } else {
       text_param$nudge_x <- -0.01
@@ -660,13 +642,13 @@ prettify <- function(plot, label = c("label", "text"), locale, abbr = TRUE,
         do.call(geom_text, text2_param)
     }
   }
-  plot <- plot + 
+  plot <- plot +
     scale_x_continuous(breaks = breaks$x, minor_breaks = minor_breaks$x)
-  plot <- plot + 
-    scale_y_continuous(breaks = breaks$y, minor_breaks = minor_breaks$y) 
-  plot <- plot + 
+  plot <- plot +
+    scale_y_continuous(breaks = breaks$y, minor_breaks = minor_breaks$y)
+  plot <- plot +
     theme(
-      axis.text = element_blank(), 
+      axis.text = element_blank(),
       axis.ticks = element_blank(),
       axis.title = element_blank()
     )
@@ -708,14 +690,14 @@ gen_wday_index <- function(sunday = FALSE) {
 
 gen_day_breaks <- function(grids) {
   # day breaks
-  minor_xbreaks_df <- grids %>% 
-    group_by(COL) %>% 
+  minor_xbreaks_df <- grids %>%
+    group_by(COL) %>%
     summarise(
       .xminor_min = min(.gx)
     )
   minor_xbreaks <- minor_xbreaks_df$.xminor_min
-  minor_ybreaks_df <- grids %>% 
-    group_by(ROW) %>% 
+  minor_ybreaks_df <- grids %>%
+    group_by(ROW) %>%
     summarise(
       .yminor_min = min(.gy)
     )

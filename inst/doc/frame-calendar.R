@@ -2,8 +2,10 @@
 library(knitr)
 opts_chunk$set(
   warning = FALSE, message = FALSE, echo = TRUE,
-  fig.width = 7, fig.height = 6, fig.align = 'centre'
+  fig.width = 7, fig.height = 6, fig.align = 'centre',
+  comment = "#>"
 )
+options(tibble.print_min = 5)
 
 ## ----load----------------------------------------------------------------
 library(tidyr)
@@ -11,14 +13,14 @@ library(dplyr)
 library(viridis)
 library(sugrrants)
 pedestrian17 <- filter(pedestrian, Year == "2017")
-head(pedestrian17)
+pedestrian17
 
 ## ----centre--------------------------------------------------------------
 centre <- pedestrian17 %>% 
   filter(Sensor_Name == "Melbourne Convention Exhibition Centre")
 centre_calendar <- centre %>%
   frame_calendar(x = Time, y = Hourly_Counts, date = Date, calendar = "monthly")
-head(centre_calendar)
+centre_calendar
 
 ## ----centre-plot---------------------------------------------------------
 p1 <- centre_calendar %>% 
@@ -102,12 +104,13 @@ two_sensors_wide <- two_sensors_df %>%
 sensors_wide_calendar <- two_sensors_wide %>% 
   frame_calendar(x = Time, y = vars(Centre, Lonsdale), date = Date, 
     calendar = "weekly")
-head(sensors_wide_calendar)
+sensors_wide_calendar
 
 ## ----ped-daily-plot------------------------------------------------------
 p7 <- sensors_wide_calendar %>%
   ggplot() +
-  geom_rect(aes(xmin = .Time, xmax = .Time + 0.005,
+  geom_rect(aes(
+    xmin = .Time, xmax = .Time + 0.005,
     ymin = .Lonsdale, ymax = .Centre, fill = More
   )) +
   scale_fill_brewer(palette = "Dark2") +

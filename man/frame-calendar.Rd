@@ -3,12 +3,11 @@
 \name{frame_calendar}
 \alias{frame_calendar}
 \alias{prettify}
-\title{Rearrange a temporal data frame to a calendar-based data format using
-linear algebra}
+\title{Rearrange a temporal data frame to a calendar-based data format using linear algebra}
 \usage{
 frame_calendar(data, x, y, date, calendar = "monthly", dir = "h",
   sunday = FALSE, nrow = NULL, ncol = NULL, polar = FALSE,
-  scale = "fixed", width = 0.95, height = 0.95)
+  scale = "fixed", width = 0.95, height = 0.95, margin = NULL)
 
 prettify(plot, label = c("label", "text"), locale, abbr = TRUE, ...)
 }
@@ -51,6 +50,8 @@ conditional on each daily cell, "free_wday" for scaling on weekdays,
 \item{width, height}{Numerics between 0 and 1 to specify the width/height for
 each glyph.}
 
+\item{margin}{A numeric between 0 and 1 to specify the gap between month panels.}
+
 \item{plot}{ggplot object}
 
 \item{label}{If "label" is specified, it will add month/week text on the
@@ -76,12 +77,12 @@ useful for \code{geom_line} or \code{geom_path}. The basic use is \code{ggplot(a
 the actual \code{x} and \code{y} with a prefix \code{.}.
 }
 \description{
-Temporal data of daily intervals or higher frequency levels can
-be organised into a calendar-based format, which is useful for visually
-presenting calendar-related activities or multiple seasonality (such as
-time of day, day of week, day of month). The function only returns a
-rearranged data frame, and \code{ggplot2} takes care of the plotting afterwards.
-It allows more flexibility for users to visualise the data in various ways.
+Temporal data of daily intervals or higher frequency levels can be organised
+into a calendar-based format, which is useful for visually presenting
+calendar-related activities or multiple seasonality (such as time of day,
+day of week, day of month). The function only returns a rearranged data frame,
+and \code{ggplot2} takes care of the plotting afterwards. It allows more
+flexibility for users to visualise the data in various ways.
 }
 \details{
 The calendar-based graphic can be considered as small multiples
@@ -93,39 +94,36 @@ mappings. In conjunction with \code{group_by()}, it allows the grouped variable
 to have their individual scales. For more details, see \code{vignette("frame-calendar", package = "sugrrants")}
 }
 \examples{
-   library(dplyr)
-   # compute the calendar layout for the data frame
-   calendar_df <- pedestrian \%>\%
-     filter(Sensor_ID == 13, Year == 2016) \%>\% 
-     frame_calendar(x = Time, y = Hourly_Counts, date = Date, nrow = 4)
+library(dplyr)
+# compute the calendar layout for the data frame
+calendar_df <- pedestrian \%>\%
+  filter(Sensor_ID == 13, Year == 2016) \%>\%
+  frame_calendar(x = Time, y = Hourly_Counts, date = Date, nrow = 4)
 
-   # ggplot
-   p1 <- calendar_df \%>\% 
-     ggplot(aes(x = .Time, y = .Hourly_Counts, group = Date)) +
-     geom_line()
-   prettify(p1, size = 3, label.padding = unit(0.15, "lines"))
-   
-   # use in conjunction with group_by()
-   grped_calendar <- pedestrian \%>\% 
-     filter(Year == "2017", Month == "March") \%>\% 
-     group_by(Sensor_Name) \%>\% 
-     frame_calendar(
-       x = Time, y = Hourly_Counts, date = Date, sunday = TRUE
-     )
-   
-   p2 <- grped_calendar \%>\% 
-     ggplot(aes(x = .Time, y = .Hourly_Counts, group = Date)) +
-     geom_line() +
-     facet_wrap(~ Sensor_Name, nrow = 2)
-   prettify(p2)
-   \dontrun{
-     # allow for different languages
-     # below gives simplied Chinese labels with STKaiti font family,
-     # assuming this font installed in user's local system
-     prettify(p2, locale = "zh", family = "STKaiti")
-   }
+# ggplot
+p1 <- calendar_df \%>\%
+  ggplot(aes(x = .Time, y = .Hourly_Counts, group = Date)) +
+  geom_line()
+prettify(p1, size = 3, label.padding = unit(0.15, "lines"))
 
+# use in conjunction with group_by()
+grped_calendar <- pedestrian \%>\%
+  filter(Year == "2017", Month == "March") \%>\%
+  group_by(Sensor_Name) \%>\%
+  frame_calendar(
+    x = Time, y = Hourly_Counts, date = Date, sunday = TRUE
+  )
+
+p2 <- grped_calendar \%>\%
+  ggplot(aes(x = .Time, y = .Hourly_Counts, group = Date)) +
+  geom_line() +
+  facet_wrap(~ Sensor_Name, nrow = 2)
+prettify(p2)
+\dontrun{
+  # allow for different languages
+  # below gives simplied Chinese labels with STKaiti font family,
+  # assuming this font installed in user's local system
+  prettify(p2, locale = "zh", family = "STKaiti")
 }
-\author{
-Earo Wang
+
 }
