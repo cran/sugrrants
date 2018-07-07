@@ -1,3 +1,8 @@
+# sugrrants 0.1.3
+
+* Deprecated `au_holiday()`, as a complete function `holiday_aus()` is available in the **tsibble** package.
+* Fixed `grouped_df` issue to be compatible with ggplot2 v3.0.0.
+
 # sugrrants 0.1.2
 
 * Added a new argument `margin = NULL` to allow users for margin adjustment between month panels.
