@@ -1,3 +1,7 @@
+# sugrrants 0.1.5
+
+* Avoid strong dependency on `tsibble` & `readr`.
+
 # sugrrants 0.1.4
 
 * Retired `au_holiday()`, since tsibble offers a complete version in `holiday_aus()`.
