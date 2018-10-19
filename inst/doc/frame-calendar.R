@@ -22,34 +22,34 @@ centre_calendar <- centre %>%
   frame_calendar(x = Time, y = Hourly_Counts, date = Date, calendar = "monthly")
 centre_calendar
 
-## ----centre-plot---------------------------------------------------------
+## ----centre-plot, fig.height = 7-----------------------------------------
 p1 <- centre_calendar %>% 
   ggplot(aes(x = .Time, y = .Hourly_Counts, group = Date)) +
   geom_line()
 p1
 
-## ----centre-more---------------------------------------------------------
+## ----centre-more, fig.height = 7-----------------------------------------
 prettify(p1)
 
-## ----centre-free, fig.height = 2.5---------------------------------------
+## ----centre-free, fig.height = 6, fig.width = 9--------------------------
 centre_calendar_free <- centre %>%
   frame_calendar(x = Time, y = Hourly_Counts, date = Date, calendar = "monthly",
     scale = "free", ncol = 4)
 p2 <- ggplot(centre_calendar_free, 
         aes(x = .Time, y = .Hourly_Counts, group = Date)) +
   geom_line()
-prettify(p2, label = NULL)
+prettify(p2)
 
-## ----centre-wday, fig.height = 2.5---------------------------------------
+## ----centre-wday, fig.height = 6, fig.width = 9--------------------------
 centre_calendar_wday <- centre %>%
   frame_calendar(x = Time, y = Hourly_Counts, date = Date, calendar = "monthly",
     scale = "free_wday", ncol = 4)
 p3 <- ggplot(centre_calendar_wday, 
         aes(x = .Time, y = .Hourly_Counts, group = Date)) +
   geom_line()
-prettify(p3, label = NULL)
+prettify(p3)
 
-## ----overlay, fig.height = 3, fig.width = 8------------------------------
+## ----overlay, fig.height = 6, fig.width = 9------------------------------
 two_sensors <- c("Lonsdale St (South)", "Melbourne Convention Exhibition Centre")
 two_sensors_df <- pedestrian17 %>%
   filter(Sensor_Name %in% two_sensors)
@@ -64,9 +64,9 @@ p4 <- ggplot(two_sensors_calendar) +
     data = filter(two_sensors_calendar, Sensor_Name == two_sensors[2]),
     aes(.Time, .Hourly_Counts, group = Date), colour = "#d95f02"
   )
-prettify(p4, label = NULL)
+prettify(p4)
 
-## ----ped-facet, fig.height = 6-------------------------------------------
+## ----ped-facet, fig.height = 11, fig.width = 9---------------------------
 grped_calendar <- two_sensors_df %>% 
   group_by(Sensor_Name) %>%
   frame_calendar(x = Time, y = Hourly_Counts, date = Date, ncol = 4)
@@ -76,7 +76,7 @@ p5 <- grped_calendar %>%
   facet_grid(Sensor_Name ~ .) +
   scale_color_brewer(palette = "Dark2") +
   theme(legend.position = "bottom")
-prettify(p5, label = NULL)
+prettify(p5)
 
 ## ----ped-lag, fig.height = 2, fig.width = 8, warning = TRUE--------------
 centre_lagged <- centre %>%
@@ -129,5 +129,5 @@ p8 <- centre_max_calendar %>%
   ggplot(aes(x = .x, y = .y)) +
   geom_tile(aes(fill = Max_Counts), colour = "grey50") +
   scale_fill_viridis()
-prettify(p8, label = NULL)
+prettify(p8, label = "label", label.padding = unit(0.2, "lines"))
 

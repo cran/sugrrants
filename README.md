@@ -42,19 +42,17 @@ calendar_df <- pedestrian %>%
   mutate(
     Weekend = if_else(Day %in% c("Saturday", "Sunday"), "Weekend", "Weekday")
   ) %>%
-  frame_calendar(
-    x = Time, y = Hourly_Counts, date = Date, calendar = "monthly"
-  )
+  frame_calendar(x = Time, y = Hourly_Counts, date = Date)
 calendar_df
 #> # A tibble: 8,780 x 13
 #>   Date_Time           Date        Year Month Mdate Day    Time Sensor_ID
-#> * <dttm>              <date>     <int> <ord> <int> <ord> <int>     <int>
+#>   <dttm>              <date>     <int> <ord> <int> <ord> <int>     <int>
 #> 1 2016-01-01 00:00:00 2016-01-01  2016 Janu…     1 Frid…     0         9
 #> 2 2016-01-01 01:00:00 2016-01-01  2016 Janu…     1 Frid…     1         9
 #> 3 2016-01-01 02:00:00 2016-01-01  2016 Janu…     1 Frid…     2         9
 #> 4 2016-01-01 03:00:00 2016-01-01  2016 Janu…     1 Frid…     3         9
 #> 5 2016-01-01 04:00:00 2016-01-01  2016 Janu…     1 Frid…     4         9
-#> # ... with 8,775 more rows, and 5 more variables: Sensor_Name <chr>,
+#> # … with 8,775 more rows, and 5 more variables: Sensor_Name <chr>,
 #> #   Hourly_Counts <int>, Weekend <chr>, .Time <dbl>, .Hourly_Counts <dbl>
 ```
 
@@ -63,7 +61,7 @@ p <- calendar_df %>%
   ggplot(aes(x = .Time, y = .Hourly_Counts, group = Date, colour = Weekend)) +
   geom_line() +
   theme(legend.position = "bottom")
-prettify(p, label.padding = unit(0.08, "lines"))
+prettify(p)
 ```
 
 ![](man/figure/calendar-plot-1.png)<!-- -->
