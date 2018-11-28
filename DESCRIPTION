@@ -1,6 +1,6 @@
 Package: sugrrants
 Title: Supporting Graphs for Analysing Time Series
-Version: 0.2.0
+Version: 0.2.1
 Authors@R: 
     c(person(given = "Earo",
              family = "Wang",
@@ -25,16 +25,17 @@ Depends: ggplot2 (>= 2.2.0), R (>= 3.1.3)
 Imports: dplyr (>= 0.7.0), grid, gtable, lubridate (>= 1.7.1), rlang
         (>= 0.2.0)
 Suggests: covr, knitr, plotly, readr, rmarkdown, testthat, tidyr,
-        tsibble (>= 0.5.0), viridis
+        tsibble (>= 0.6.0), viridis
 VignetteBuilder: knitr
 Encoding: UTF-8
+Language: en-GB
 LazyData: true
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 NeedsCompilation: no
-Packaged: 2018-10-28 05:10:54 UTC; earo
+Packaged: 2018-11-28 22:34:51 UTC; earo
 Author: Earo Wang [aut, cre] (<https://orcid.org/0000-0001-6448-5260>),
   Di Cook [aut, ths] (<https://orcid.org/0000-0002-3813-7155>),
   Rob Hyndman [aut, ths] (<https://orcid.org/0000-0002-2140-5352>)
 Maintainer: Earo Wang <earo.wang@gmail.com>
 Repository: CRAN
-Date/Publication: 2018-10-28 05:30:03 UTC
+Date/Publication: 2018-11-28 22:50:03 UTC

@@ -1,3 +1,7 @@
+# sugrrants 0.2.1
+
+This is a patch release for the changes in **tsibble**.
+
 # sugrrants 0.2.0
 
 * Added a new faceting method `facet_calendar()`.

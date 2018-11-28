@@ -66,7 +66,7 @@ globalVariables(c(
 #' package = "sugrrants")`
 #'
 #' @rdname frame-calendar
-#' @seealso [facet_calendar] for a fully-fledged facetting calenar with formal
+#' @seealso [facet_calendar] for a fully-fledged faceting calendar with formal
 #' labels and axes.
 #' @examples
 #' library(dplyr)
@@ -140,11 +140,15 @@ frame_calendar.tbl_ts <- function(
       calendar = calendar, dir = dir, sunday = sunday,
       nrow = nrow, ncol = ncol, polar = polar, scale = scale,
       width = width, height = height, margin = margin
-    ) %>%
-    tsibble::build_tsibble_meta(
-      key = tsibble::key(data), index = !! tsibble::index(data), 
-      index2 = !! tsibble::index2(data), groups = groups(data), 
-      interval = tsibble::interval(data), ordered = tsibble::is_ordered(data)
+    )
+  if (tsibble::is_grouped_ts(data)) {
+    out <- out %>% 
+      group_by(!!! groups(data))
+  }
+  out <- tsibble::build_tsibble_meta(
+      out, key = tsibble::key(data), index = !! tsibble::index(data), 
+      index2 = !! tsibble::index2(data), interval = tsibble::interval(data), 
+      ordered = tsibble::is_ordered(data)
     )
   class(out) <- c("tbl_cal", class(out))
   out
