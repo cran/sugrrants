@@ -2,7 +2,8 @@ globalVariables("facet_wrap")
 
 #' Lay out panels in a calendar format
 #'
-#' @param date A variable that contains dates will be mapped in the calendar.
+#' @param date A variable that contains dates or an expression that generates 
+#' dates will be mapped in the calendar.
 #' @param format A character string, such as `%Y-%b-%d` and `%a (%d)`, formatting
 #' the display of facet strips. See `?strptime` for details.
 #' @param week_start Day on which week starts following ISO conventions -
@@ -13,6 +14,7 @@ globalVariables("facet_wrap")
 #' @param dir Direction of calendar: "h" for horizontal (the default) or "v" for
 #' vertical.
 #' @inheritParams ggplot2::facet_wrap
+#' @importFrom gtable gtable_add_cols gtable_add_rows
 #'
 #' @details A monthly calendar is set up as a 5 by 7 layout matrix. Each month could 
 #' extend over six weeks but in these months is to wrap the last few days up 
@@ -30,7 +32,7 @@ globalVariables("facet_wrap")
 #' fs %>%
 #'   ggplot(aes(x = Time, y = Hourly_Counts)) +
 #'   geom_line(aes(colour = Sensor_Name)) +
-#'   facet_calendar(~ Date, nrow = 2) +
+#'   facet_calendar(~ Date, nrow = 2) + # or ~ as.Date(Date_Time)
 #'   theme(legend.position = "bottom")
 #' }
 facet_calendar <- function(date, format = "%b %d",
@@ -66,7 +68,7 @@ facet_calendar <- function(date, format = "%b %d",
 FacetCalendar <- ggproto("FacetCalendar", FacetWrap,
   compute_layout = function(data, params) {
     eval_date <- eval_tidy(params$date, data = data[[1]])
-    date_chr <- as_string(params$date)
+    date_chr <- expr_text(params$date)
 
     if (!(inherits(eval_date, "Date"))) {
       abort(sprintf(
@@ -93,7 +95,10 @@ FacetCalendar <- ggproto("FacetCalendar", FacetWrap,
   },
 
   map_data = function(data, layout, params) {
-    date_chr <- as_string(params$date)
+    date_chr <- expr_text(params$date)
+    if (is_call(params$date)) {
+      data <- dplyr::mutate(data, !! date_chr := !! params$date)
+    }
     dplyr::left_join(data, layout, by = date_chr)
   },
 
@@ -113,17 +118,17 @@ FacetCalendar <- ggproto("FacetCalendar", FacetWrap,
     nrow <- max(layout$MROW)
     if (params$dir == "h") {
       for (i in seq(28, by = 28, length.out = ncol - 1)) {
-        canvas <- gtable::gtable_add_cols(canvas, width = col_spacer, pos = i)
+        canvas <- gtable_add_cols(canvas, width = col_spacer, pos = i)
       }
       for (j in seq(26, by = 26, length.out = nrow - 1)) {
-        canvas <- gtable::gtable_add_rows(canvas, heights = row_spacer, pos = j)
+        canvas <- gtable_add_rows(canvas, heights = row_spacer, pos = j)
       }
     } else {
       for (i in seq(21, by = 21, length.out = ncol - 1)) {
-        canvas <- gtable::gtable_add_cols(canvas, width = col_spacer, pos = i)
+        canvas <- gtable_add_cols(canvas, width = col_spacer, pos = i)
       }
       for (j in seq(36, by = 36, length.out = nrow - 1)) {
-        canvas <- gtable::gtable_add_rows(canvas, heights = row_spacer, pos = j)
+        canvas <- gtable_add_rows(canvas, heights = row_spacer, pos = j)
       }
     }
     canvas
@@ -136,9 +141,6 @@ as_facet_date <- function(x) {
   } 
   if (is_formula(x)) {
     x <- f_rhs(x)
-  }
-  if (is_call(x)) {
-    abort("Facet calendar only accepts (un)quoted variable and RHS formula.")
   }
   x
 }
