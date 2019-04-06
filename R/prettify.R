@@ -178,8 +178,12 @@ get_calendar <- function(data) {
   attr(data, "calendar")
 }
 
-gen_wday_index <- function(sunday = FALSE) {
-  if (sunday) 1:7 else c(2:7, 1)
+gen_wday_index <- function(week_start = 1) {
+  if (week_start == 1) {
+    week_start:7
+  } else {
+    c(week_start:7, 1:(week_start - 1))
+  }
 }
 
 gen_day_breaks <- function(grids) {
@@ -214,17 +218,17 @@ pre_plot <- function(calendar, label, text, locale, abbr = TRUE) {
       mon_ab = month.abb,
       day_ab = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"),
       mon = month.name,
-      day = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" )
+      day = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
     )
   }
   if (abbr) {
     mtext <- loc_dn$mon_ab
-    dtext <- loc_dn$day_ab
+    dtext <- loc_dn$day_ab[c(2:7, 1)]
     # a single letter
     if (locale == "en") dtext <- substring(dtext, first = 1, last = 1)
   } else {
     mtext <- loc_dn$mon
-    dtext <- loc_dn$day
+    dtext <- loc_dn$day[c(2:7, 1)]
   }
   if (calendar == "monthly") {
     nyr <- unique.default(label$year)

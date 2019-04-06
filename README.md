@@ -47,7 +47,7 @@ pedestrian %>%
   theme(legend.position = "bottom")
 ```
 
-![](man/figure/facet-calendar-1.png)<!-- -->
+![](man/figures/facet-calendar-1.png)<!-- -->
 
 On the other hand, the `frame_calendar()` provides tools for
 re-structuring the data into a compact calendar layout, without using
@@ -65,9 +65,11 @@ p <- pedestrian %>%
 prettify(p)
 ```
 
-![](man/figure/calendar-plot-1.png)<!-- -->
+![](man/figures/calendar-plot-1.png)<!-- -->
 
 ## Google Summer of Code 2017
+
+<details>
 
 This package is part of the project—[Tidy data structures and visual
 methods to support exploration of big temporal-context
@@ -120,6 +122,8 @@ have been written and documented as the v0.1.0 and v0.2.0 releases on
 CRAN. The majority of the code for the function
 [`run_melb()`](https://github.com/earowang/rwalkr/blob/master/R/soda.R)
 has been done, but the interface needs improving after the gsoc.
+
+</details>
 
 ## Miscellaneous
 
