@@ -6,16 +6,24 @@
 \alias{FacetCalendar}
 \title{Lay out panels in a calendar format}
 \usage{
-facet_calendar(date, format = "\%b \%d",
-  week_start = getOption("lubridate.week.start", 1), nrow = NULL,
-  ncol = NULL, scales = "fixed", shrink = TRUE, dir = "h",
-  labeller = "label_value", strip.position = "top")
+facet_calendar(
+  date,
+  format = "\%b \%d",
+  week_start = getOption("lubridate.week.start", 1),
+  nrow = NULL,
+  ncol = NULL,
+  scales = "fixed",
+  shrink = TRUE,
+  dir = "h",
+  labeller = "label_value",
+  strip.position = "top"
+)
 }
 \arguments{
 \item{date}{A variable that contains dates or an expression that generates
 dates will be mapped in the calendar.}
 
-\item{format}{A character string, such as \code{\%Y-\%b-\%d} and \code{\%a (\%d)}, formatting
+\item{format}{A character string, such as \verb{\%Y-\%b-\%d} and \verb{\%a (\%d)}, formatting
 the display of facet strips. See \code{?strptime} for details.}
 
 \item{week_start}{Day on which week starts following ISO conventions -
@@ -42,8 +50,8 @@ column corresponds to one factor. Thus there will be more than
 one with formulae of the type \code{~cyl + am}. Each output
 column gets displayed as one separate line in the strip
 label. This function should inherit from the "labeller" S3 class
-for compatibility with \code{\link[=labeller]{labeller()}}. See
-\code{\link[=label_value]{label_value()}} for more details and pointers to other
+for compatibility with \code{\link[ggplot2:labeller]{labeller()}}. See
+\code{\link[ggplot2:label_value]{label_value()}} for more details and pointers to other
 options.}
 
 \item{strip.position}{By default, the labels are displayed on the top of
@@ -61,7 +69,7 @@ to the top row of the block.
 }
 \examples{
 \donttest{
-fs <- pedestrian \%>\%
+fs <- hourly_peds \%>\%
   dplyr::filter(Date < as.Date("2016-05-01"))
 
 fs \%>\%

@@ -1,4 +1,4 @@
-## ----initial, echo = FALSE, cache = FALSE, results = 'hide'--------------
+## ----initial, echo = FALSE, cache = FALSE, results = 'hide'-------------------
 library(knitr)
 opts_chunk$set(
   warning = FALSE, message = FALSE, echo = TRUE,
@@ -7,31 +7,31 @@ opts_chunk$set(
 )
 options(tibble.print_min = 5)
 
-## ----load----------------------------------------------------------------
+## ----load---------------------------------------------------------------------
 library(tidyr)
 library(dplyr)
 library(viridis)
 library(sugrrants)
-pedestrian17 <- filter(pedestrian, Year == "2017")
+pedestrian17 <- filter(hourly_peds, Year == "2017")
 pedestrian17
 
-## ----centre--------------------------------------------------------------
+## ----centre-------------------------------------------------------------------
 centre <- pedestrian17 %>% 
   filter(Sensor_Name == "Melbourne Convention Exhibition Centre")
 centre_calendar <- centre %>%
   frame_calendar(x = Time, y = Hourly_Counts, date = Date, calendar = "monthly")
 centre_calendar
 
-## ----centre-plot, fig.height = 7-----------------------------------------
+## ----centre-plot, fig.height = 7----------------------------------------------
 p1 <- centre_calendar %>% 
   ggplot(aes(x = .Time, y = .Hourly_Counts, group = Date)) +
   geom_line()
 p1
 
-## ----centre-more, fig.height = 7-----------------------------------------
+## ----centre-more, fig.height = 7----------------------------------------------
 prettify(p1)
 
-## ----centre-free, fig.height = 6, fig.width = 9--------------------------
+## ----centre-free, fig.height = 6, fig.width = 9-------------------------------
 centre_calendar_free <- centre %>%
   frame_calendar(x = Time, y = Hourly_Counts, date = Date, calendar = "monthly",
     scale = "free", ncol = 4)
@@ -40,7 +40,7 @@ p2 <- ggplot(centre_calendar_free,
   geom_line()
 prettify(p2)
 
-## ----centre-wday, fig.height = 6, fig.width = 9--------------------------
+## ----centre-wday, fig.height = 6, fig.width = 9-------------------------------
 centre_calendar_wday <- centre %>%
   frame_calendar(x = Time, y = Hourly_Counts, date = Date, calendar = "monthly",
     scale = "free_wday", ncol = 4)
@@ -49,7 +49,7 @@ p3 <- ggplot(centre_calendar_wday,
   geom_line()
 prettify(p3)
 
-## ----overlay, fig.height = 6, fig.width = 9------------------------------
+## ----overlay, fig.height = 6, fig.width = 9-----------------------------------
 two_sensors <- c("Lonsdale St (South)", "Melbourne Convention Exhibition Centre")
 two_sensors_df <- pedestrian17 %>%
   filter(Sensor_Name %in% two_sensors)
@@ -66,7 +66,7 @@ p4 <- ggplot(two_sensors_calendar) +
   )
 prettify(p4)
 
-## ----ped-facet, fig.height = 11, fig.width = 9---------------------------
+## ----ped-facet, fig.height = 11, fig.width = 9--------------------------------
 grped_calendar <- two_sensors_df %>% 
   group_by(Sensor_Name) %>%
   frame_calendar(x = Time, y = Hourly_Counts, date = Date, ncol = 4)
@@ -78,7 +78,7 @@ p5 <- grped_calendar %>%
   theme(legend.position = "bottom")
 prettify(p5)
 
-## ----ped-lag, fig.height = 2, fig.width = 8, warning = TRUE--------------
+## ----ped-lag, fig.height = 2, fig.width = 8, warning = TRUE-------------------
 centre_lagged <- centre %>%
   mutate(Lagged_Counts = dplyr::lag(Hourly_Counts))
 centre_lagged_calendar <- centre_lagged %>% 
@@ -89,7 +89,7 @@ p6 <- centre_lagged_calendar %>%
   geom_point(size = 0.5)
 prettify(p6, size = 3)
 
-## ----ped-daily-----------------------------------------------------------
+## ----ped-daily----------------------------------------------------------------
 two_sensors_wide <- two_sensors_df %>% 
   select(-Sensor_ID) %>% 
   spread(key = Sensor_Name, value = Hourly_Counts) %>% 
@@ -106,7 +106,7 @@ sensors_wide_calendar <- two_sensors_wide %>%
     calendar = "weekly")
 sensors_wide_calendar
 
-## ----ped-daily-plot------------------------------------------------------
+## ----ped-daily-plot-----------------------------------------------------------
 p7 <- sensors_wide_calendar %>%
   ggplot() +
   geom_rect(aes(
@@ -117,7 +117,7 @@ p7 <- sensors_wide_calendar %>%
   theme(legend.position = "bottom")
 prettify(p7)
 
-## ----ped-max-------------------------------------------------------------
+## ----ped-max------------------------------------------------------------------
 centre_daily <- centre %>%
   group_by(Date) %>%
   summarise(Max_Counts = max(Hourly_Counts)) %>%

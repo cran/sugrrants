@@ -5,10 +5,23 @@
 \alias{prettify}
 \title{Rearrange a temporal data frame to a calendar-based data format using linear algebra}
 \usage{
-frame_calendar(data, x, y, date, calendar = "monthly", dir = "h",
-  week_start = getOption("lubridate.week.start", 1), nrow = NULL,
-  ncol = NULL, polar = FALSE, scale = "fixed", width = 0.95,
-  height = 0.95, margin = NULL, ...)
+frame_calendar(
+  data,
+  x,
+  y,
+  date,
+  calendar = "monthly",
+  dir = "h",
+  week_start = getOption("lubridate.week.start", 1),
+  nrow = NULL,
+  ncol = NULL,
+  polar = FALSE,
+  scale = "fixed",
+  width = 0.95,
+  height = 0.95,
+  margin = NULL,
+  ...
+)
 
 prettify(plot, label = c("label", "text"), locale, abbr = TRUE, ...)
 }
@@ -77,7 +90,7 @@ used.}
 A data frame or a dplyr::tibble with newly added columns of \code{.x}, \code{.y}. \code{.x}
 and \code{.y} together give new coordinates computed for different types of
 calendars. \code{date} groups the same dates in a chronological order, which is
-useful for \code{geom_line} or \code{geom_path}. The basic use is \code{ggplot(aes(x = .x, y = .y, group = date)) + geom_*}. The variable names \code{.x} and \code{.y} reflect
+useful for \code{geom_line} or \code{geom_path}. The basic use is \verb{ggplot(aes(x = .x, y = .y, group = date)) + geom_*}. The variable names \code{.x} and \code{.y} reflect
 the actual \code{x} and \code{y} with a prefix \code{.}.
 }
 \description{
@@ -100,7 +113,7 @@ to have their individual scales. For more details, see \code{vignette("frame-cal
 \examples{
 library(dplyr, warn.conflicts = FALSE)
 # compute the calendar layout for the data frame
-calendar_df <- pedestrian \%>\%
+calendar_df <- hourly_peds \%>\%
   filter(Sensor_ID == 13, Year == 2016) \%>\%
   frame_calendar(x = Time, y = Hourly_Counts, date = Date, nrow = 4)
 
@@ -111,7 +124,7 @@ p1 <- calendar_df \%>\%
 prettify(p1, size = 3, label.padding = unit(0.15, "lines"))
 
 # use in conjunction with group_by()
-grped_calendar <- pedestrian \%>\%
+grped_calendar <- hourly_peds \%>\%
   filter(Year == "2017", Month == "March") \%>\%
   group_by(Sensor_Name) \%>\%
   frame_calendar(x = Time, y = Hourly_Counts, date = Date, week_start = 7)
@@ -132,7 +145,7 @@ if (!requireNamespace("plotly", quietly = TRUE)) {
   stop("Please install the 'plotly' package to run these following examples.")
 }
 library(plotly)
-pp <- calendar_df \%>\% 
+pp <- calendar_df \%>\%
   group_by(Date) \%>\%
   plot_ly(x = ~ .Time, y = ~ .Hourly_Counts) \%>\%
   add_lines(text = ~ paste("Count: ", Hourly_Counts, "<br> Time: ", Time))
